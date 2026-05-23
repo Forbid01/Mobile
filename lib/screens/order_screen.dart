@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'product_detail_screen.dart';
+import '../viewmodels/cart_view_model.dart';
 
 class OrderScreen extends StatelessWidget {
   const OrderScreen({super.key});
@@ -21,10 +22,11 @@ class OrderScreen extends StatelessWidget {
         title: const Text(
           "Захиалга",
           style: TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-              decoration: TextDecoration.lineThrough),
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            decoration: TextDecoration.lineThrough,
+          ),
         ),
       ),
       body: CustomScrollView(
@@ -32,7 +34,7 @@ class OrderScreen extends StatelessWidget {
           SliverPadding(
             padding: const EdgeInsets.all(16),
             sliver: SliverList.builder(
-              itemCount: 20,
+              itemCount: 3,
               itemBuilder: (context, i) =>
                   _buildCouponCard(_couponColors[i % _couponColors.length]),
             ),
@@ -47,7 +49,8 @@ class OrderScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
               ),
               itemCount: 6,
-              itemBuilder: (context, index) => _buildOrderProductCard(context, index),
+              itemBuilder: (context, index) =>
+                  _buildOrderProductCard(context, index),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 30)),
@@ -90,7 +93,11 @@ class OrderScreen extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(
-                      left: 60, right: 14, top: 20, bottom: 12),
+                    left: 60,
+                    right: 14,
+                    top: 20,
+                    bottom: 12,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -116,9 +123,10 @@ class OrderScreen extends StatelessWidget {
                               Text(
                                 "1 өдөр үлдсэн",
                                 style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.black45,
-                                    decoration: TextDecoration.lineThrough),
+                                  fontSize: 11,
+                                  color: Colors.black45,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
                               ),
                               Text(
                                 "12000₮",
@@ -133,7 +141,9 @@ class OrderScreen extends StatelessWidget {
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
@@ -177,111 +187,157 @@ class OrderScreen extends StatelessWidget {
         ),
       ),
       child: Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                Center(
-                  child: SizedBox(
-                    height: 90,
-                    width: 100,
-                    child: Hero(
-                      tag: heroTag,
-                      child: Image.asset("assets/images/tea.png",
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  Center(
+                    child: SizedBox(
+                      height: 90,
+                      width: 100,
+                      child: Hero(
+                        tag: heroTag,
+                        child: Image.asset(
+                          "assets/images/tea.png",
                           fit: BoxFit.contain,
                           errorBuilder: (c, e, s) => const Icon(
-                              Icons.image_not_supported,
-                              size: 40,
-                              color: Colors.grey)),
+                            Icons.image_not_supported,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const Spacer(),
-                const Text("Энхжин булцуут цэцгийн цай",
+                  const Spacer(),
+                  const Text(
+                    "Энхжин булцуут цэцгийн цай",
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style:
-                        TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                const SizedBox(height: 6),
-                Text.rich(
-                  TextSpan(children: [
-                    const TextSpan(
-                        text: "12,000",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
-                    const WidgetSpan(child: SizedBox(width: 2)),
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: Image.asset("assets/images/Vector.png",
-                          height: 12,
-                          width: 12,
-                          errorBuilder: (c, e, s) => const Text("₮")),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 6),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        const TextSpan(
+                          text: "12,000",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const WidgetSpan(child: SizedBox(width: 2)),
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Image.asset(
+                            "assets/images/Vector.png",
+                            height: 12,
+                            width: 12,
+                            errorBuilder: (c, e, s) => const Text("₮"),
+                          ),
+                        ),
+                      ],
                     ),
-                  ]),
-                ),
-                Text("42,000₮",
+                  ),
+                  Text(
+                    "42,000₮",
                     style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade500,
-                        decoration: TextDecoration.lineThrough)),
-              ],
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                      decoration: TextDecoration.lineThrough,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Positioned(
-            top: 0,
-            left: 0,
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: const BoxDecoration(
-                color: Color(0xFF00E676),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(16),
+            Positioned(
+              top: 0,
+              left: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF00E676),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  "ШИНЭ",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              child: const Text("ШИНЭ",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold)),
             ),
-          ),
-          const Positioned(
-            top: 12,
-            right: 12,
-            child: Icon(Icons.favorite_border, size: 22, color: Colors.black87),
-          ),
-          Positioned(
-            bottom: 12,
-            right: 12,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Color(0xFF006338),
-                borderRadius: BorderRadius.all(Radius.circular(12)),
+            const Positioned(
+              top: 12,
+              right: 12,
+              child: Icon(
+                Icons.favorite_border,
+                size: 22,
+                color: Colors.black87,
               ),
-              child: Image.asset('assets/images/shop_icon.png',
-                  width: 20, height: 20, color: Colors.white),
             ),
-          ),
-        ],
+            Positioned(
+              bottom: 12,
+              right: 12,
+              child: GestureDetector(
+                onTap: () {
+                  CartViewModel.instance.addItem(
+                    id: 'tea-product',
+                    name: 'Энхжин булцуут цэцгийн цай',
+                    imagePath: 'assets/images/tea.png',
+                    price: 12000,
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Сагсанд нэмэгдлээ'),
+                      duration: Duration(milliseconds: 900),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF006338),
+                    borderRadius: BorderRadius.all(Radius.circular(12)),
+                  ),
+                  child: Image.asset(
+                    'assets/images/shop_icon.png',
+                    width: 20,
+                    height: 20,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-    )); // GestureDetector + Container
+    ); // GestureDetector + Container
   }
 }

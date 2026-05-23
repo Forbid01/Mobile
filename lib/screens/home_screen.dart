@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../widgets/custom_drawer.dart';
+import '../viewmodels/cart_view_model.dart';
+import 'cart_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,6 +13,67 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  static const List<String> _bannerImages = [
+    'assets/images/Aqua1.png',
+    'assets/images/Aqua1.png',
+    'assets/images/Aqua1.png',
+    'assets/images/Aqua1.png',
+  ];
+
+  final PageController _bannerController = PageController();
+  int _currentBanner = 0;
+  Timer? _bannerTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    CartViewModel.instance.addListener(_onCartChanged);
+    _bannerTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!_bannerController.hasClients) return;
+      final next = (_currentBanner + 1) % _bannerImages.length;
+      _bannerController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _bannerTimer?.cancel();
+    _bannerController.dispose();
+    CartViewModel.instance.removeListener(_onCartChanged);
+    super.dispose();
+  }
+
+  void _onCartChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _openCart() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CartScreen()),
+    );
+  }
+
+  void _addTeaToCart() {
+    CartViewModel.instance.addItem(
+      id: 'tea-product',
+      name: 'Энхжин булцуут цэцгийн цай',
+      imagePath: 'assets/images/tea.png',
+      price: 12000,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Сагсанд нэмэгдлээ'),
+        duration: Duration(milliseconds: 900),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final cartCount = CartViewModel.instance.totalQuantity;
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -86,10 +151,12 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () {},
           icon: const Icon(Icons.favorite_border, color: Colors.black87),
         ),
-        IconButton(
-          onPressed: () {},
-          icon: Image.asset('assets/images/shop_icon.png',
-              width: 24, height: 24, color: Colors.black87),
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: _CartIconButton(
+            count: cartCount,
+            onPressed: _openCart,
+          ),
         ),
       ],
     );
@@ -154,13 +221,22 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
               color: Colors.blue.shade100,
-              image: const DecorationImage(
-                image: AssetImage("assets/images/aqua.png"),
-                fit: BoxFit.cover,
+              child: PageView.builder(
+                controller: _bannerController,
+                itemCount: _bannerImages.length,
+                onPageChanged: (i) => setState(() => _currentBanner = i),
+                itemBuilder: (context, index) => Image.asset(
+                  _bannerImages[index],
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  errorBuilder: (c, e, s) =>
+                      Container(color: Colors.blue.shade100),
+                ),
               ),
             ),
           ),
@@ -169,13 +245,14 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
-                4,
-                (index) => Container(
+                _bannerImages.length,
+                (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
                   margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: index == 0 ? 16 : 6,
+                  width: index == _currentBanner ? 16 : 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: index == 0
+                    color: index == _currentBanner
                         ? Colors.white
                         : Colors.white.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(3),
@@ -441,18 +518,77 @@ class _HomeScreenState extends State<HomeScreen> {
           Positioned(
             bottom: 12,
             right: 12,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Color(0xFF006338),
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.all(Radius.circular(12)),
+            child: GestureDetector(
+              onTap: _addTeaToCart,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF006338),
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                ),
+                child: Image.asset('assets/images/shop_icon.png',
+                    width: 20, height: 20, color: Colors.white),
               ),
-              child: Image.asset('assets/images/shop_icon.png',
-                  width: 20, height: 20, color: Colors.white),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CartIconButton extends StatelessWidget {
+  final int count;
+  final VoidCallback onPressed;
+
+  const _CartIconButton({required this.count, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 44,
+        height: 44,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Image.asset(
+              'assets/images/shop_icon.png',
+              width: 22,
+              height: 22,
+              color: const Color.fromARGB(175, 0, 0, 0),
+            ),
+            if (count > 0)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 5, vertical: 2),
+                  constraints: const BoxConstraints(
+                      minWidth: 16, minHeight: 16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF6A00),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    count > 99 ? '99+' : count.toString(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      height: 1.1,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

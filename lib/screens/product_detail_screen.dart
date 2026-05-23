@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import '../viewmodels/cart_view_model.dart';
+import 'cart_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String heroTag;
   final String imagePath;
   final String productName;
   final String price;
+  final int priceValue;
+  final String productId;
 
   const ProductDetailScreen({
     super.key,
@@ -12,6 +16,8 @@ class ProductDetailScreen extends StatefulWidget {
     required this.imagePath,
     required this.productName,
     required this.price,
+    this.priceValue = 12000,
+    this.productId = 'tea-product',
   });
 
   @override
@@ -36,12 +42,41 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
       vsync: this,
       duration: const Duration(seconds: 3),
     )..repeat();
+    CartViewModel.instance.addListener(_onCartChanged);
   }
 
   @override
   void dispose() {
     _rotationController.dispose();
+    CartViewModel.instance.removeListener(_onCartChanged);
     super.dispose();
+  }
+
+  void _onCartChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _addToCart() {
+    CartViewModel.instance.addItem(
+      id: widget.productId,
+      name: widget.productName,
+      imagePath: widget.imagePath,
+      price: widget.priceValue,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Сагсанд нэмэгдлээ'),
+        duration: Duration(milliseconds: 900),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _openCart() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CartScreen()),
+    );
   }
 
   @override
@@ -69,10 +104,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
                         color: Colors.black87, size: 22),
                     onPressed: () {},
                   ),
-                  IconButton(
-                    icon: Image.asset('assets/images/shop_icon.png',
-                        width: 22, height: 22, color: Colors.black87),
-                    onPressed: () {},
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _CartIconButton(
+                      count: CartViewModel.instance.totalQuantity,
+                      onPressed: _openCart,
+                    ),
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
@@ -250,7 +287,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen>
             bottom: 24,
             right: 20,
             child: GestureDetector(
-              onTap: () {},
+              onTap: _addToCart,
               child: Container(
                 width: 56,
                 height: 56,
@@ -486,6 +523,61 @@ class _NumberedText extends StatelessWidget {
             style: const TextStyle(
                 fontSize: 13, color: Colors.black87, height: 1.5),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CartIconButton extends StatelessWidget {
+  final int count;
+  final VoidCallback onPressed;
+
+  const _CartIconButton({required this.count, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 44,
+        height: 44,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Image.asset(
+              'assets/images/shop_icon.png',
+              width: 22,
+              height: 22,
+              color: Colors.black87,
+            ),
+            if (count > 0)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 5, vertical: 2),
+                  constraints: const BoxConstraints(
+                      minWidth: 16, minHeight: 16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFF6A00),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    count > 99 ? '99+' : count.toString(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      height: 1.1,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
